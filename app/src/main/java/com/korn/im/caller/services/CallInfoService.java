@@ -29,6 +29,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.korn.im.caller.R;
+import com.korn.im.caller.receivers.CallReceiver;
 
 import java.net.URL;
 
@@ -115,13 +116,13 @@ public class CallInfoService extends Service {
     private LinearLayout initLayout() {
         LinearLayout linearLayout = new LinearLayout(this);
         linearLayout.setOrientation(LinearLayout.HORIZONTAL);
-
+        linearLayout.setBackgroundResource(R.drawable.holder);
         return linearLayout;
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        String name = getCallerName(intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER));
+        String name = getCallerName(intent.getStringExtra(CallReceiver.EXTRA_NUMBER));
 
         if(textView != null)
             if(name != null)
@@ -144,13 +145,14 @@ public class CallInfoService extends Service {
     }
 
     public String getCallerName(String phoneNumber) {
-        Uri query = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber));
-        Cursor cursor = getContentResolver().query(query, new String[]{ContactsContract.PhoneLookup.DISPLAY_NAME}, null, null, null);
-        if(cursor != null){
-            cursor.moveToFirst();
-            String name = cursor.getString(0);
-            cursor.close();
-            return name;
+        if(phoneNumber != null) {
+            Uri query = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber));
+            Cursor cursor = getContentResolver().query(query, new String[]{ContactsContract.PhoneLookup.DISPLAY_NAME}, null, null, null);
+            if(cursor != null && cursor.moveToFirst()){
+                String name = cursor.getString(0);
+                cursor.close();
+                return name;
+            }
         }
         return null;
     }
